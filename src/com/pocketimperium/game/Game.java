@@ -13,11 +13,8 @@ public class Game {
 
         Player[] playerList = {new Player(), new Player(), new Player()};
 
-        Sector[] map = {
-            new Sector("top"), new Sector("top"), new Sector("top"),
-            new Sector("side"), new Sector("TriPrime"), new Sector("side"),
-            new Sector("bottom"), new Sector("bottom"), new Sector("bottom")
-        }; 
+        Carte carte = new Carte();
+        carte.afficherCarte();
 
         for (Player player : playerList) {
             boolean validInput = false;
