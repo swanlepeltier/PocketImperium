@@ -1,13 +1,41 @@
 package com.pocketimperium.player;
 
+import com.pocketimperium.game.Hex;
+import java.util.ArrayList;
+import java.util.Scanner;
+
 public class Player {
     private String color;
-    private Fleet[] fleetList;
+    private ArrayList<Fleet> fleetList;
     private Boolean isHuman;
     private String name;
+    private int remainingShip = 15;
 
-    public void placeFleet(){
-        
+    private Scanner scanner = new Scanner(System.in);
+
+    public Player(){
+        fleetList = new ArrayList<>();
+    }
+
+    public int getFleetListSize(){
+        return fleetList.size();
+    }
+
+    public void placeFleetStart(Hex hex){
+        Fleet tempFleet = new Fleet(hex, 2, this);
+        fleetList.add(tempFleet);
+        this.remainingShip -= 2;
+        hex.setFleet(tempFleet);
+    }
+
+    public int chooseSector(){
+        System.out.print(this.name + " : choose a Sector : ");
+        return scanner.nextInt();
+    }
+
+    public int chooseHex(){
+        System.out.print(this.name + " : choose a Hex : ");
+        return scanner.nextInt();
     }
 
     public void setPlayerState(Boolean choice){
@@ -21,4 +49,23 @@ public class Player {
     public void setColor(String color){
         this.color = color;
     }
+
+    public ArrayList<Fleet> getFleets(){
+        return fleetList;
+    }
+
+    public void addFleet(Hex hex, int amount){
+        this.remainingShip -= amount;
+        this.fleetList.add(new Fleet(hex, amount, this));
+    }
+
+    @Override
+    public String toString(){
+        String result = this.name + " :\n";
+        for (Fleet fleet : fleetList){
+            result += fleet.toString() + "\n";
+        }
+        return  result;
+    }
+
 }

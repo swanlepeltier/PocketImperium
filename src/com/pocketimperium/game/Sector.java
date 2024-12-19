@@ -3,11 +3,11 @@ package com.pocketimperium.game;
 import java.util.ArrayList;
 
 public class Sector {
-    private final String nom;
-    private final ArrayList<Hex> hexagones;
+    private final int id;
+    protected final ArrayList<Hex> hexagones;
 
-    public Sector(String nom) {
-        this.nom = nom;
+    public Sector(int id) {
+        this.id = id;
         this.hexagones = new ArrayList<>();
         ArrayList<Integer> availableSystem = new ArrayList<>();
 
@@ -21,7 +21,7 @@ public class Sector {
         
         for (int i = 0; i < 7; i++){
             int randomSystem = (int) (Math.random()*availableSystem.size());
-            hexagones.add(new Hex(i, nom, availableSystem.get(randomSystem)));
+            hexagones.add(new Hex(i, id, availableSystem.get(randomSystem)));
             availableSystem.remove(randomSystem);
         }
 
@@ -49,6 +49,13 @@ public class Sector {
 
     }
 
+    // Constructeur minimaliste
+    protected Sector(int id, boolean skipInitialization) {
+        this.id = id;
+        this.hexagones = new ArrayList<>();
+        // Pas d'initialisation supplémentaire
+    }
+
     @Override
     public String toString(){
         String result = "";
@@ -58,12 +65,11 @@ public class Sector {
         return result;
     }
 
-    public String getNom() {
-        return nom;
+    public int getId() {
+        return id;
     }
 
     public ArrayList<Hex> getHexs() {
         return hexagones;
     }
-
 }

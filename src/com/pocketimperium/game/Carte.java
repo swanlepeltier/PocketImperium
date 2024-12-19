@@ -8,10 +8,12 @@ public class Carte {
 
     public Carte(){
         for (int i = 0; i < 6; i++){
-            Sector sector = new Sector("secteur" + i);
+            Sector sector = new Sector(i);
             sectors.add(sector);
         }
         
+        sectors.add(new TriPrime(6));
+
         // Ajouter les voisins inter-secteur
 
         // sector0
@@ -38,6 +40,24 @@ public class Carte {
         sectors.get(5).getHexs().get(1).addNeighbor(sectors.get(1).getHexs().get(5));
         sectors.get(5).getHexs().get(2).addNeighbor(sectors.get(1).getHexs().get(4));
 
+        // triprime
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(0).getHexs().get(4));
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(0).getHexs().get(3));
+
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(1).getHexs().get(5));
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(1).getHexs().get(4));
+
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(2).getHexs().get(0));
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(2).getHexs().get(5));
+
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(3).getHexs().get(1));
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(3).getHexs().get(0));
+
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(4).getHexs().get(2));
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(4).getHexs().get(1));
+
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(5).getHexs().get(3));
+        sectors.get(6).getHexs().get(0).addNeighbor(sectors.get(5).getHexs().get(2));
     }
 
     public void afficherCarte(){
@@ -46,4 +66,7 @@ public class Carte {
         }
     }
 
+    public ArrayList<Sector> getSectors() {
+        return sectors;
+    }
 }

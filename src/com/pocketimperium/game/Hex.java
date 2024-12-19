@@ -1,16 +1,18 @@
 package com.pocketimperium.game;
 
+import com.pocketimperium.player.Fleet;
 import java.util.ArrayList;
 
 public class Hex {
     private final int id;
-    private final String secteur;
+    private final int sector;
     private final int systeme; // "Niveau 1", "Niveau 2", ou null
     private final ArrayList<Hex> neighbors;
+    private Fleet fleet;
 
-    public Hex(int id, String secteur, int systeme) {
+    public Hex(int id, int sector, int systeme) {
         this.id = id;
-        this.secteur = secteur;
+        this.sector = sector;
         this.systeme = systeme;
         this.neighbors = new ArrayList<>();
     }
@@ -19,8 +21,8 @@ public class Hex {
         return id;
     }
 
-    public String getSecteur() {
-        return secteur;
+    public int getSector() {
+        return sector;
     }
 
     public int getSysteme() {
@@ -38,11 +40,23 @@ public class Hex {
         return neighbors;
     }
 
+    public Fleet getFleet() {
+        return fleet;
+    }
+
+    public void setFleet(Fleet fleet) {
+        this.fleet = fleet;
+    }
+
+    public boolean isEmpty() {
+        return fleet == null;
+    }
+
     @Override
     public String toString() {
-        String result = "Hex{" + "id='" + id + '\'' + ", secteur='" + secteur + '\'' + ", systeme='" + systeme + '\'' + '}' + " :\n\n";
+        String result = "Hex{" + "id='" + id + '\'' + ", secteur='" + sector + '\'' + ", systeme='" + systeme + '\'' + '}' + " :\n\n";
         for (Hex hex : neighbors){
-            result += " - Hex{" + "id='" + hex.id + '\'' + ", secteur='" + hex.secteur + '\'' + ", systeme='" + hex.systeme + '\'' + '}' + "\n";
+            result += " - Hex{" + "id='" + hex.id + '\'' + ", secteur='" + hex.sector + '\'' + ", systeme='" + hex.systeme + '\'' + '}' + "\n";
         }
         return result;
     }

@@ -1,21 +1,30 @@
 package com.pocketimperium.game;
 
+import com.pocketimperium.player.Fleet;
 import com.pocketimperium.player.Player;
 import java.util.Scanner;
 
 public class Game {
     Scanner scanner = new Scanner(System.in);
+    Player[] playerList = {new Player(), new Player(), new Player()};
 
     public void start(){
         System.out.println("-------------------");
         System.out.println("| Pocket Imperium |");
         System.out.println("-------------------");
 
-        Player[] playerList = {new Player(), new Player(), new Player()};
-
         Carte carte = new Carte();
         carte.afficherCarte();
 
+        for (Player player : playerList) {
+            player.setPlayerState(true);
+        }
+
+        playerList[0].setName("Swan");
+        playerList[1].setName("Emma");
+        playerList[2].setName("Mathieu");
+
+        /*
         for (Player player : playerList) {
             boolean validInput = false;
         
@@ -42,11 +51,55 @@ public class Game {
             String playerName = scanner.nextLine();
             player.setName(playerName);
         }
-        
+        */
+
+        int sectorNumber;
+        int hexNumber;
+
 
         for(Player player : playerList){
-            player.placeFleet();
+            sectorNumber = player.chooseSector();
+            hexNumber = player.chooseHex();
+            player.placeFleetStart(carte.getSectors().get(sectorNumber).getHexs().get(hexNumber));
+            System.out.println(player.toString());
+        }
+
+        for(int i = 2; i >= 0; i--){
+            sectorNumber = playerList[i].chooseSector();
+            hexNumber = playerList[i].chooseHex();
+            playerList[i].placeFleetStart(carte.getSectors().get(sectorNumber).getHexs().get(hexNumber));
+            System.out.println(playerList[i].toString());
         }
 
     }
+
+    public int chooseSector(Player currentPlayer){
+        int sectorNumber = 0;
+        Boolean validInput = false;
+        while (!validInput) {
+            sectorNumber = currentPlayer.chooseSector();
+
+            for (Player player : playerList){
+
+                if(player != currentPlayer){
+                    if(player.getFleetListSize() > 0){
+
+                        for (Fleet fleet : player.getFleets()){
+                            System.out.println(fleet.getHex().getSector());
+
+                            if (sectorNumber != fleet.getHex().getSector()){
+                                validInput = true;
+                            }
+                            else{
+                                validInput = false;
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+        return sectorNumber;
+    }
+
 }
