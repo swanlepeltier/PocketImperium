@@ -73,6 +73,11 @@ public class Game {
 
     }
 
+    public void playRound(){
+        for (Player player : playerList){
+
+        }
+    }
     public int chooseSector(Player currentPlayer){
         int sectorNumber = 0;
         Boolean validInput = false;

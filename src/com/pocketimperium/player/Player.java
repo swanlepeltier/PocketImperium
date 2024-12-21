@@ -59,6 +59,8 @@ public class Player {
         this.fleetList.add(new Fleet(hex, amount, this));
     }
 
+    publi
+
     @Override
     public String toString(){
         String result = this.name + " :\n";
