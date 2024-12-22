@@ -15,6 +15,10 @@ public class Fleet {
 
     public void setAmount(int amount) {
         this.amount = amount;
+        if (this.amount == 0) {
+            this.hex.setFleet(null);
+            this.player.getFleets().remove(this);
+        }
     }
 
     public int getAmount() {

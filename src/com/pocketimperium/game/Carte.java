@@ -18,26 +18,32 @@ public class Carte {
 
         // sector0
         sectors.get(0).getHexs().get(2).addNeighbor(sectors.get(1).getHexs().get(0));
+        sectors.get(0).getHexs().get(2).addNeighbor(sectors.get(1).getHexs().get(5));
         sectors.get(0).getHexs().get(3).addNeighbor(sectors.get(1).getHexs().get(5));
 
         //  sector1
         sectors.get(1).getHexs().get(3).addNeighbor(sectors.get(1).getHexs().get(1));
+        sectors.get(1).getHexs().get(3).addNeighbor(sectors.get(1).getHexs().get(0));
         sectors.get(1).getHexs().get(4).addNeighbor(sectors.get(1).getHexs().get(0));
 
         //  sector2
         sectors.get(2).getHexs().get(4).addNeighbor(sectors.get(1).getHexs().get(2));
+        sectors.get(2).getHexs().get(4).addNeighbor(sectors.get(1).getHexs().get(1));
         sectors.get(2).getHexs().get(5).addNeighbor(sectors.get(1).getHexs().get(1));
 
         //  sector3
         sectors.get(3).getHexs().get(0).addNeighbor(sectors.get(1).getHexs().get(2));
+        sectors.get(3).getHexs().get(0).addNeighbor(sectors.get(1).getHexs().get(3));
         sectors.get(3).getHexs().get(5).addNeighbor(sectors.get(1).getHexs().get(3));
 
         //  sector4
         sectors.get(4).getHexs().get(0).addNeighbor(sectors.get(1).getHexs().get(4));
+        sectors.get(4).getHexs().get(0).addNeighbor(sectors.get(1).getHexs().get(3));
         sectors.get(4).getHexs().get(1).addNeighbor(sectors.get(1).getHexs().get(3));
 
         //  sector5
         sectors.get(5).getHexs().get(1).addNeighbor(sectors.get(1).getHexs().get(5));
+        sectors.get(5).getHexs().get(1).addNeighbor(sectors.get(1).getHexs().get(4));
         sectors.get(5).getHexs().get(2).addNeighbor(sectors.get(1).getHexs().get(4));
 
         // triprime
