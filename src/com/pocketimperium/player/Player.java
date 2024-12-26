@@ -13,12 +13,35 @@ public class Player {
     private int remainingShip = 15;
     private int[] cardOrder = {1, 2, 3};
     private Game game;
+    private int score = 0;
 
     private Scanner scanner = new Scanner(System.in);
 
     public Player(Game game){
         fleetList = new ArrayList<>();
         this.game = game;
+    }
+
+    public void setScore(int score){
+        this.score = score;
+    }
+
+    public int getScore(){
+        return this.score;
+    }
+
+    public String getColor(){
+        return this.color;
+    }
+
+    public void score(int sectorIndex){
+        int tempScore = 0;
+        for (Fleet fleet : fleetList){
+            if(fleet.getHex().getSector() == sectorIndex){
+                tempScore += fleet.getHex().getSysteme();
+            }
+        }
+        this.score += tempScore;
     }
 
     public int getFleetListSize(){
@@ -33,19 +56,41 @@ public class Player {
     }
 
     public int chooseSector(){
-        System.out.print(this.name + " : choose a Sector : ");
-        return scanner.nextInt();
+        if(this.isHuman){
+            System.out.print(this.name + " : choose a Sector : ");
+            return scanner.nextInt();
+        }
+        else{
+            return (int)(Math.random() * 6);
+        }
     }
 
     public int chooseHex(){
-        System.out.print(this.name + " : choose a Hex : ");
-        return scanner.nextInt();
+        if(this.isHuman){
+            System.out.print(this.name + " : choose a Hex : ");
+            return scanner.nextInt();
+        }
+        else{
+            return (int)(Math.random() * 6);
+        }
     }
 
     public int[] chooseCardOrder(){
-        System.out.print(this.name + " : choose the order of the cards : ");
-        for (int i = 0; i < 3; i++){
-            cardOrder[i] = scanner.nextInt();
+        if(this.isHuman){
+            System.out.print(this.name + " : choose the order of the cards : ");
+            for (int i = 0; i < 3; i++){
+                cardOrder[i] = scanner.nextInt();
+            }
+        }
+        else{
+            ArrayList<Integer> cardList = new ArrayList<>();
+            for (int i = 1; i <= 3; i++) {
+                cardList.add(i);
+            }
+            java.util.Collections.shuffle(cardList);
+            for (int i = 0; i < 3; i++) {
+                cardOrder[i] = cardList.get(i);
+            }
         }
         return cardOrder;
     }
@@ -79,11 +124,22 @@ public class Player {
         this.fleetList.add(new Fleet(hex, amount, this));
     }
 
+    public void removeFleet(Fleet fleet){
+        this.remainingShip += fleet.getAmount();
+        this.fleetList.remove(fleet);
+    }
+
     public void expand(int power){
-        int fleetIndex;
+        int fleetIndex = -1;
+        if(this.remainingShip < power){
+            power = this.remainingShip;
+        }
+
         if(this.isHuman){
-            System.out.print(this.name + " : choose a Fleet : ");
-            fleetIndex = scanner.nextInt();
+            while (fleetIndex >= fleetList.size() || fleetIndex < 0){
+                System.out.print(this.name + " : choose a Fleet : ");
+                fleetIndex = scanner.nextInt();  
+            }
         }
         else{
             // Randomly choose a fleet
@@ -99,14 +155,108 @@ public class Player {
         else if (power == 3){
             fleetList.get(fleetIndex).setAmount(1 + fleetList.get(fleetIndex).getAmount());
         }
+        this.remainingShip -= power;
+        System.out.println(this.toString());
+    }
+
+    public Boolean validFleetAmount(int fleetIndex, int amount){
+        Boolean result = fleetList.get(fleetIndex).getAmount() >= amount;
+        if(fleetIndex >= fleetList.size() || amount <= 0){
+            return false;
+        }
+        if(!result){
+            if(this.isHuman){
+                System.out.println("Error: Not enough ships in the selected fleet.");
+            }
+        }
+
+        return result;
+    }
+
+    public Boolean validHex(int sectorIndex, int hexIndex) {
+        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Fleet fleet = targetHex.getFleet();
+        Boolean result = ((fleet == null) || (fleet.getPlayer() == this)) && hexIndex >= 0 && hexIndex < game.carte.getSectors().get(sectorIndex).getHexs().size();
+        if (!result) {
+            if(this.isHuman){
+                System.out.println("Error: The selected hex already has an enemy fleet.");
+            }
+        }
+        return result;
+    }
+
+    public Boolean validSector(int sectorIndex) {
+        Boolean result = sectorIndex >= 0 && sectorIndex < game.carte.getSectors().size();
+        if (!result) {
+            if(this.isHuman){
+                System.out.println("Error: The selected sector index is out of bounds.");
+            }
+        }
+        return result;
+    }
+
+    public Boolean validSectorStart(int sectorIndex) {
+        Boolean result = true;
+        for(Hex hex : game.carte.getSectors().get(sectorIndex).getHexs()){
+            result = hex.getFleet() == null;
+            if(!result){
+                break;
+            }
+        }
+        if (!result) {
+            if(this.isHuman){
+                System.out.println("Error: The selected sector already has an enemy fleet.");
+            }
+            return result;
+        }
+        return result;
+    }
+
+    public Boolean validNeighbour(int sectorIndex, int hexIndex, int fleetIndex) {
+        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Hex fleetHex = fleetList.get(fleetIndex).getHex();
+        Boolean result = targetHex.getNeighbor().contains(fleetHex) || 
+                targetHex.getNeighbor().stream().anyMatch(neighbour -> 
+                    neighbour.getNeighbor().contains(fleetHex) && 
+                    neighbour.getSector() != 6);
+        if (!result) {
+            if (this.isHuman) {
+                System.out.println("Error: The selected hex is not a neighbour or neighbour of a neighbour of the fleet's current hex, or the intermediate neighbour is in sector 6.");
+            }
+        }
+        return result;
+    }
+
+    public Boolean validNeighbourSolo(int sectorIndex, int hexIndex, int fleetIndex) {
+        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Hex fleetHex = fleetList.get(fleetIndex).getHex();
+        Boolean result = targetHex.getNeighbor().contains(fleetHex);
+        if (!result) {
+            if(this.isHuman){
+                System.out.println("Error: The selected hex is not a direct neighbour of the fleet's current hex.");
+            }
+        }
+        return result;
+    }
+
+    public Boolean hasSystem1(int sectorIndex, int hexIndex){
+        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Boolean result = targetHex.getSysteme() == 1;
+        if (!result) {
+            if(this.isHuman){
+                System.out.println("Error: The selected hex does not have a system.");
+            }
+        }
+        return result;
     }
 
     public void explore(int power){
         int repeat = 3;
-        int fleetIndex;
-        int amount;
-        int sectorIndex;
-        int hexIndex;
+        int fleetIndex = 0;
+        int amount = 0;
+        int sectorIndex = 0;
+        int hexIndex = 0;
+        Boolean validInput = false;
 
         if (power == 2){
             repeat = 2;
@@ -116,54 +266,109 @@ public class Player {
         }
 
         for(int i = 0; i < repeat; i++){
-            if(this.isHuman){
-                System.out.print(this.name + " : choose a Fleet : ");
-                fleetIndex = scanner.nextInt();
-                System.out.print(this.name + " : choose amount : ");
-                amount = scanner.nextInt();
-                System.out.print(this.name + " : choose a Sector : ");
-                sectorIndex = scanner.nextInt();
-                System.out.print(this.name + " : choose a Hex : ");
-                hexIndex = scanner.nextInt();
+            while (!validInput) {
+                if(this.isHuman){
+                    System.out.print(this.name + " : choose a Fleet : ");
+                    fleetIndex = scanner.nextInt();
+                    System.out.print(this.name + " : choose amount : ");
+                    amount = scanner.nextInt();
+                    System.out.print(this.name + " : choose a Sector : ");
+                    sectorIndex = scanner.nextInt();
+                    System.out.print(this.name + " : choose a Hex : ");
+                    hexIndex = scanner.nextInt();
+                }
+                else{
+                    // Randomly choose a fleet
+                    fleetIndex = (int)(Math.random() * fleetList.size());
+                    amount = (int)(Math.random() * fleetList.get(fleetIndex).getAmount());
+                    sectorIndex = (int)(Math.random() * 6);
+                    hexIndex = (int)(Math.random() * 6);
+                }
+
+                boolean validFleetAmount = this.validFleetAmount(fleetIndex, amount);
+
+                boolean validHex = this.validHex(sectorIndex, hexIndex);
+
+                boolean validNeighbour = this.validNeighbour(sectorIndex, hexIndex, fleetIndex);
+
+                validInput = validFleetAmount && validHex && validNeighbour;
             }
-            else{
-                // Randomly choose a fleet
-                fleetIndex = (int)(Math.random() * fleetList.size());
-                amount = (int)(Math.random() * fleetList.get(fleetIndex).getAmount());
-                sectorIndex = (int)(Math.random() * fleetList.get(fleetIndex).getHex().getSector());
-                hexIndex = (int)(Math.random() * fleetList.get(fleetIndex).getHex().getId());
-            }
+            
+            validInput = false;
             fleetList.get(fleetIndex).setAmount(fleetList.get(fleetIndex).getAmount() - amount);
             Fleet tempFleet = new Fleet(game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex), amount, this);
             game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex).setFleet(tempFleet);
             fleetList.add(tempFleet);
         }
+        System.out.println(this.toString());
     }
 
     public void exterminate(int power){
-        System.out.println(this.name + " : choose a Sector to exterminate : ");
-        int sectorIndex = scanner.nextInt();
-        System.out.println(this.name + " : choose a Hex to exterminate : ");
-        int hexIndex = scanner.nextInt();
-        System.out.println(this.name + " : choose a Fleet to use : ");
-        int fleetIndex = scanner.nextInt();
+        int repeat = 3;
+        Boolean validInput = false;
+        if (power == 2){
+            repeat = 2;
+        }
+        else if (power == 3){
+            repeat = 1;
+        }
 
-        Hex tempHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        for(int i = 0; i < repeat; i++){
+            int sectorIndex = 0;
+            int hexIndex = 0;
+            int fleetIndex = 0;
+            while (!validInput) {
+                if(this.isHuman){
+                    System.out.println(this.name + " : choose a Sector to exterminate : ");
+                    sectorIndex = scanner.nextInt();
+                    System.out.println(this.name + " : choose a Hex to exterminate : ");
+                    hexIndex = scanner.nextInt();
+                    System.out.println(this.name + " : choose a Fleet to use : ");
+                    fleetIndex = scanner.nextInt();
+                }
+                else{
+                    // Randomly choose a sector
+                    sectorIndex = (int)(Math.random() * 6);
+                    // Randomly choose a hex
+                    hexIndex = (int)(Math.random() * 6);
+                    // Randomly choose a fleet
+                    fleetIndex = (int)(Math.random() * fleetList.size());
+                }
+                validInput = validNeighbourSolo(sectorIndex, hexIndex, fleetIndex);
+            }
+            validInput = false;
+            Hex tempHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+            int amountLeft;
 
-        int amountLeft = tempHex.getFleet().getAmount() - fleetList.get(fleetIndex).getAmount();
-        if(amountLeft < 0){
-            tempHex.getFleet().setAmount(0);
-            tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+            if(tempHex.getFleet() == null){
+                amountLeft = - fleetList.get(fleetIndex).getAmount();
+            }
+            else{
+                amountLeft = tempHex.getFleet().getAmount() - fleetList.get(fleetIndex).getAmount();
+            }
+
+            if(amountLeft < 0){
+                if(tempHex.getFleet() == null){
+                    tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+                }
+                else{
+                    tempHex.getFleet().setAmount(0);
+                    tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+                }
+                
+            }
+            else if(amountLeft == 0){
+                tempHex.getFleet().setAmount(0);
+                fleetList.get(fleetIndex).setAmount(0);
+            }
+            else{
+                tempHex.getFleet().setAmount(amountLeft);
+                fleetList.get(fleetIndex).setAmount(0);
+            }
+
+            }
+            System.out.println(this.toString());
         }
-        else if(amountLeft == 0){
-            tempHex.getFleet().setAmount(0);
-            fleetList.get(fleetIndex).setAmount(0);
-        }
-        else{
-            tempHex.getFleet().setAmount(amountLeft);
-            fleetList.get(fleetIndex).setAmount(0);
-        }
-    }
 
     @Override
     public String toString(){

@@ -8,6 +8,8 @@ public class Main {
         game.start();
         for (int i = 0; i<9; i++){
             game.playRound();
+            game.score();
         }
+        game.end();
     }
 }

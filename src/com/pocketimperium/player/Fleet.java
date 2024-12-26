@@ -17,7 +17,7 @@ public class Fleet {
         this.amount = amount;
         if (this.amount == 0) {
             this.hex.setFleet(null);
-            this.player.getFleets().remove(this);
+            this.player.removeFleet(this);
         }
     }
 
@@ -31,6 +31,10 @@ public class Fleet {
 
     public void setHex(Hex hex) {
         this.hex = hex;
+    }
+
+    public Player getPlayer() {
+        return player;
     }
 
     @Override

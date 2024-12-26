@@ -17,16 +17,16 @@ public class Game {
         carte.afficherCarte();
 
         for (Player player : playerList) {
-            player.setPlayerState(true);
+            player.setPlayerState(false);
         }
+        playerList[0].setName("Bot1");
+        playerList[1].setName("Bot2");
+        playerList[2].setName("Bot3");
 
-        playerList[0].setName("Swan");
-        playerList[1].setName("Emma");
-        playerList[2].setName("Mathieu");
 
         /*
         for (Player player : playerList) {
-            boolean validInput = false;
+            Boolean validInput = false;
         
             // Gestion sécurisée de l'état du joueur (0 : Bot, 1 : Humain)
             while (!validInput) {
@@ -52,21 +52,29 @@ public class Game {
             player.setName(playerName);
         }
         */
-
-        int sectorNumber;
-        int hexNumber;
+        int sectorNumber = 0;
+        int hexNumber = 0;
+        Boolean validInput = false;
 
 
         for(Player player : playerList){
-            sectorNumber = player.chooseSector();
-            hexNumber = player.chooseHex();
+            while (!validInput) {
+                sectorNumber = player.chooseSector();
+                hexNumber = player.chooseHex();
+                validInput = player.validHex(sectorNumber, hexNumber) && player.validSector(sectorNumber) && player.validSectorStart(sectorNumber) && player.hasSystem1(sectorNumber, hexNumber); 
+            }
+            validInput = false;
             player.placeFleetStart(carte.getSectors().get(sectorNumber).getHexs().get(hexNumber));
             System.out.println(player.toString());
         }
 
         for(int i = 2; i >= 0; i--){
-            sectorNumber = playerList[i].chooseSector();
-            hexNumber = playerList[i].chooseHex();
+            while (!validInput) {
+                sectorNumber = playerList[i].chooseSector();
+                hexNumber = playerList[i].chooseHex();
+                validInput = playerList[i].validHex(sectorNumber, hexNumber) && playerList[i].validSector(sectorNumber) && playerList[i].validSectorStart(sectorNumber) && playerList[i].hasSystem1(sectorNumber, hexNumber); 
+            }
+            validInput = false;
             playerList[i].placeFleetStart(carte.getSectors().get(sectorNumber).getHexs().get(hexNumber));
             System.out.println(playerList[i].toString());
         }
@@ -77,11 +85,12 @@ public class Game {
         int cardOrder[][] = new int[3][3];
         int[] actionCount = new int[3];
 
+        for (Player player : playerList){
+            player.chooseCardOrder();
+        }
+
         for (int i = 0; i < playerList.length; i++) {
             Player player = playerList[i];
-            for (int card : player.chooseCardOrder()) {
-            System.out.println(player.getName() + " : " + card);
-            }
             cardOrder[i] = player.getCardOrder();
         }
         for (int i = 0; i < playerList.length; i++) {
@@ -103,8 +112,6 @@ public class Game {
                 }
             }
 
-            System.out.println("Action count : " + actionCount[0] + " " + actionCount[1] + " " + actionCount[2]);
-
             for (int j = 0; j < 3; j++){
                 int minIndex = cardOrderMinIndex(cardOrder, i); // Find the index of the minimum card
 
@@ -125,6 +132,16 @@ public class Game {
             actionCount[2] = 0;
 
         }
+        // Rotate players
+        rotatePlayers();
+    }
+
+    public void rotatePlayers() {
+        Player lastPlayer = playerList[playerList.length - 1];
+        for (int i = playerList.length - 1; i > 0; i--) {
+            playerList[i] = playerList[i - 1];
+        }
+        playerList[0] = lastPlayer;
     }
 
     public int cardOrderMinIndex(int[][] cardOrder, int cardTurn) {
@@ -139,33 +156,39 @@ public class Game {
         return minIndex;
     }
 
-    public int chooseSector(Player currentPlayer){
-        int sectorNumber = 0;
-        Boolean validInput = false;
-        while (!validInput) {
-            sectorNumber = currentPlayer.chooseSector();
-
-            for (Player player : playerList){
-
-                if(player != currentPlayer){
-                    if(player.getFleetListSize() > 0){
-
-                        for (Fleet fleet : player.getFleets()){
-                            System.out.println(fleet.getHex().getSector());
-
-                            if (sectorNumber != fleet.getHex().getSector()){
-                                validInput = true;
-                            }
-                            else{
-                                validInput = false;
-                            }
-
-                        }
-                    }
+    public void score(){
+        int sectorIndex;
+        for (Player player : playerList){
+            for (Fleet fleet : player.getFleets()){
+                if(fleet.getHex().getSector() == 6){
+                    sectorIndex = player.chooseSector();
+                    player.score(sectorIndex);
                 }
+            sectorIndex = player.chooseSector();
+            player.score(sectorIndex);
             }
         }
-        return sectorNumber;
     }
 
+
+    public void end(){
+        int winnerIndex = 0;
+        System.out.println("End of the game");
+        for (Player player : playerList){
+            for (Fleet fleet : player.getFleets()){
+                player.setScore(player.getScore() + fleet.getHex().getSector()*2);
+            }
+        }
+        for (Player player : playerList){
+            System.out.println(player.getName() + " : " + player.getScore());
+            System.out.println(player.toString());
+        }
+
+        for (int i = 1; i < playerList.length; i++) {
+            if (playerList[i].getScore() > playerList[winnerIndex].getScore()) {
+                winnerIndex = i;
+            }
+        }
+        System.out.println(playerList[winnerIndex].getName() + " wins !");
+    }
 }
