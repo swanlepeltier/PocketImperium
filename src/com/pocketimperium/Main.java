@@ -1,6 +1,7 @@
 package com.pocketimperium;
 
 import com.pocketimperium.game.Game;
+import com.pocketimperium.player.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +27,11 @@ public class Main {
             try {
                 game = Game.loadGame(SAVE_FILE_PATH);
                 System.out.println("Game loaded from save file.");
+                for(Player player : game.getPlayerList()){
+                    System.out.println(player.getName() + " : Score : " + player.getScore());
+                    System.out.println(player.toString());
+                }
+                System.out.println("Round left : " + (9 - game.getRound()));
             } catch (IOException | ClassNotFoundException e) {
                 e.printStackTrace();
                 System.err.println("Failed to load game. Starting a new game.");
@@ -48,7 +54,7 @@ public class Main {
 
         for (int i = game.getRound(); i < 9; i++) {
             game.playRound();
-            game.score(i);
+            game.score();
             try {
                 game.saveGame(SAVE_FILE_PATH);
                 System.out.println("Game saved.");

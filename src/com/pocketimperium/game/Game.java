@@ -17,6 +17,10 @@ public class Game implements Serializable {
         return round;
     }
 
+    public Player[] getPlayerList() {
+        return playerList;
+    }
+
     public void start(){
         System.out.println("\n");
         System.out.println("-------------------");
@@ -174,7 +178,7 @@ public class Game implements Serializable {
         return minIndex;
     }
 
-    public void score(int round){
+    public void score(){
         int sectorIndex;
         for (Player player : playerList){
             for (Fleet fleet : player.getFleets()){
