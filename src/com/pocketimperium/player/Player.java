@@ -231,6 +231,14 @@ public class Player {
         Hex targetHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
         Hex fleetHex = fleetList.get(fleetIndex).getHex();
         Boolean result = targetHex.getNeighbor().contains(fleetHex);
+        Boolean resultTemp = true;
+
+        if(targetHex.getFleet() != null){
+            resultTemp = targetHex.getFleet().getPlayer() != this;
+        }
+
+        result = result && resultTemp;
+
         if (!result) {
             if(this.isHuman){
                 System.out.println("Error: The selected hex is not a direct neighbour of the fleet's current hex.");
@@ -311,6 +319,15 @@ public class Player {
                 if(fleetList.get(fleetIndex).getHex() == game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex)){
                     validInput = false;
                 }
+
+                if(fleetIndex >= fleetList.size()){
+                    fleetIndex = fleetList.size() - 1;
+                }
+
+                if(fleetIndex < 0){
+                    fleetIndex = 0;
+                }
+
             }
             
             validInput = false;
@@ -358,6 +375,14 @@ public class Player {
                     fleetIndex = (int)(Math.random() * fleetList.size());
                 }
 
+                if(fleetIndex >= fleetList.size()){
+                    fleetIndex = fleetList.size() - 1;
+                }
+
+                if(fleetIndex < 0){
+                    fleetIndex = 0;
+                }
+
                 if(sectorIndex == 6){
                     hexIndex = 0;
                 }
@@ -401,6 +426,10 @@ public class Player {
                 System.out.println("No system to exterminate");
             }
             System.out.println(this.toString());
+
+            if(this.getFleets().size() == 0){
+                game.end();
+            }
             }
         }
 
