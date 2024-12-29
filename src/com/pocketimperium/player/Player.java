@@ -143,7 +143,7 @@ public class Player {
         }
         else{
             // Randomly choose a fleet
-            fleetIndex = (int)(Math.random() * fleetList.size());
+            fleetIndex = (int)(Math.random() * (fleetList.size() - 1));
         }
         
         if (power == 1){
@@ -174,9 +174,9 @@ public class Player {
     }
 
     public Boolean validHex(int sectorIndex, int hexIndex) {
-        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Hex targetHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
         Fleet fleet = targetHex.getFleet();
-        Boolean result = ((fleet == null) || (fleet.getPlayer() == this)) && hexIndex >= 0 && hexIndex < game.carte.getSectors().get(sectorIndex).getHexs().size();
+        Boolean result = ((fleet == null) || (fleet.getPlayer() == this)) && hexIndex >= 0 && hexIndex < game.getCarte().getSectors().get(sectorIndex).getHexs().size();
         if (!result) {
             if(this.isHuman){
                 System.out.println("Error: The selected hex already has an enemy fleet.");
@@ -186,7 +186,7 @@ public class Player {
     }
 
     public Boolean validSector(int sectorIndex) {
-        Boolean result = sectorIndex >= 0 && sectorIndex < game.carte.getSectors().size();
+        Boolean result = sectorIndex >= 0 && sectorIndex < game.getCarte().getSectors().size();
         if (!result) {
             if(this.isHuman){
                 System.out.println("Error: The selected sector index is out of bounds.");
@@ -197,7 +197,7 @@ public class Player {
 
     public Boolean validSectorStart(int sectorIndex) {
         Boolean result = true;
-        for(Hex hex : game.carte.getSectors().get(sectorIndex).getHexs()){
+        for(Hex hex : game.getCarte().getSectors().get(sectorIndex).getHexs()){
             result = hex.getFleet() == null;
             if(!result){
                 break;
@@ -213,7 +213,7 @@ public class Player {
     }
 
     public Boolean validNeighbour(int sectorIndex, int hexIndex, int fleetIndex) {
-        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Hex targetHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
         Hex fleetHex = fleetList.get(fleetIndex).getHex();
         Boolean result = targetHex.getNeighbor().contains(fleetHex) || 
                 targetHex.getNeighbor().stream().anyMatch(neighbour -> 
@@ -221,14 +221,14 @@ public class Player {
                     neighbour.getSector() != 6);
         if (!result) {
             if (this.isHuman) {
-                System.out.println("Error: The selected hex is not a neighbour or neighbour of a neighbour of the fleet's current hex, or the intermediate neighbour is in sector 6.");
+                System.out.println("Error:" + this.name + " : " + targetHex.toString() + " : " + fleetList.get(fleetIndex).toString());
             }
         }
         return result;
     }
 
     public Boolean validNeighbourSolo(int sectorIndex, int hexIndex, int fleetIndex) {
-        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Hex targetHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
         Hex fleetHex = fleetList.get(fleetIndex).getHex();
         Boolean result = targetHex.getNeighbor().contains(fleetHex);
         if (!result) {
@@ -240,8 +240,19 @@ public class Player {
     }
 
     public Boolean hasSystem1(int sectorIndex, int hexIndex){
-        Hex targetHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Hex targetHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
         Boolean result = targetHex.getSysteme() == 1;
+        if (!result) {
+            if(this.isHuman){
+                System.out.println("Error: The selected hex does not have a system.");
+            }
+        }
+        return result;
+    }
+
+    public Boolean hasSystem(int sectorIndex, int hexIndex){
+        Hex targetHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
+        Boolean result = targetHex.getSysteme() > 0;
         if (!result) {
             if(this.isHuman){
                 System.out.println("Error: The selected hex does not have a system.");
@@ -280,9 +291,13 @@ public class Player {
                 else{
                     // Randomly choose a fleet
                     fleetIndex = (int)(Math.random() * fleetList.size());
-                    amount = (int)(Math.random() * fleetList.get(fleetIndex).getAmount());
-                    sectorIndex = (int)(Math.random() * 6);
-                    hexIndex = (int)(Math.random() * 6);
+                    amount = (int)(Math.random() * fleetList.get(fleetIndex).getAmount() + 1);
+                    sectorIndex = (int)(Math.random() * 7);
+                    hexIndex = (int)(Math.random() * 7);
+                }
+
+                if(sectorIndex == 6){
+                    hexIndex = 0;
                 }
 
                 boolean validFleetAmount = this.validFleetAmount(fleetIndex, amount);
@@ -292,15 +307,23 @@ public class Player {
                 boolean validNeighbour = this.validNeighbour(sectorIndex, hexIndex, fleetIndex);
 
                 validInput = validFleetAmount && validHex && validNeighbour;
+
+                if(fleetList.get(fleetIndex).getHex() == game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex)){
+                    validInput = false;
+                }
             }
             
             validInput = false;
             fleetList.get(fleetIndex).setAmount(fleetList.get(fleetIndex).getAmount() - amount);
-            Fleet tempFleet = new Fleet(game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex), amount, this);
-            game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex).setFleet(tempFleet);
-            fleetList.add(tempFleet);
+            if(game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).getFleet() == null){
+                game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).setFleet(new Fleet(game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex), amount, this));
+                fleetList.add(game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).getFleet());
+            }
+            else{
+                game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).getFleet().setAmount(game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).getFleet().getAmount() + amount);
+            }
+            System.out.println(this.toString());
         }
-        System.out.println(this.toString());
     }
 
     public void exterminate(int power){
@@ -328,46 +351,57 @@ public class Player {
                 }
                 else{
                     // Randomly choose a sector
-                    sectorIndex = (int)(Math.random() * 6);
+                    sectorIndex = (int)(Math.random() * 7);
                     // Randomly choose a hex
-                    hexIndex = (int)(Math.random() * 6);
+                    hexIndex = (int)(Math.random() * 7);
                     // Randomly choose a fleet
                     fleetIndex = (int)(Math.random() * fleetList.size());
                 }
+
+                if(sectorIndex == 6){
+                    hexIndex = 0;
+                }
+
                 validInput = validNeighbourSolo(sectorIndex, hexIndex, fleetIndex);
             }
             validInput = false;
-            Hex tempHex = game.carte.getSectors().get(sectorIndex).getHexs().get(hexIndex);
+            Hex tempHex = game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex);
             int amountLeft;
-
-            if(tempHex.getFleet() == null){
-                amountLeft = - fleetList.get(fleetIndex).getAmount();
-            }
-            else{
-                amountLeft = tempHex.getFleet().getAmount() - fleetList.get(fleetIndex).getAmount();
-            }
-
-            if(amountLeft < 0){
+            if(hasSystem(sectorIndex, hexIndex)){
                 if(tempHex.getFleet() == null){
-                    tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+                    amountLeft = - fleetList.get(fleetIndex).getAmount();
                 }
                 else{
-                    tempHex.getFleet().setAmount(0);
-                    tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+                    amountLeft = tempHex.getFleet().getAmount() - fleetList.get(fleetIndex).getAmount();
                 }
-                
-            }
-            else if(amountLeft == 0){
-                tempHex.getFleet().setAmount(0);
-                fleetList.get(fleetIndex).setAmount(0);
+
+                if(amountLeft < 0){
+                    fleetList.get(fleetIndex).setAmount(0);
+                    if(tempHex.getFleet() == null){
+                        tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+                        fleetList.add(tempHex.getFleet());
+                    }
+                    else{
+                        tempHex.getFleet().setAmount(0);
+                        tempHex.setFleet(new Fleet(tempHex, Math.abs(amountLeft), this));
+                        fleetList.add(tempHex.getFleet());
+                    }
+                    
+                }
+                else if(amountLeft == 0){
+                    tempHex.getFleet().setAmount(0);
+                    fleetList.get(fleetIndex).setAmount(0);
+                }
+                else{
+                    tempHex.getFleet().setAmount(amountLeft);
+                    fleetList.get(fleetIndex).setAmount(0);
+                }
             }
             else{
-                tempHex.getFleet().setAmount(amountLeft);
-                fleetList.get(fleetIndex).setAmount(0);
-            }
-
+                System.out.println("No system to exterminate");
             }
             System.out.println(this.toString());
+            }
         }
 
     @Override

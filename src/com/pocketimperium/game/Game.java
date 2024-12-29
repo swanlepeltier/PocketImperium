@@ -2,27 +2,28 @@ package com.pocketimperium.game;
 
 import com.pocketimperium.player.Fleet;
 import com.pocketimperium.player.Player;
-import java.util.Scanner;
 
 public class Game {
-    private Scanner scanner = new Scanner(System.in);
     private Player[] playerList = {new Player(this), new Player(this), new Player(this)};
-    public Carte carte = new Carte();
+    private Carte carte = new Carte();
 
     public void start(){
+        System.out.println("\n");
         System.out.println("-------------------");
         System.out.println("| Pocket Imperium |");
         System.out.println("-------------------");
+        System.out.println("\n");
 
         carte.afficherCarte();
 
+        
         for (Player player : playerList) {
             player.setPlayerState(false);
         }
         playerList[0].setName("Bot1");
         playerList[1].setName("Bot2");
         playerList[2].setName("Bot3");
-
+        
 
         /*
         for (Player player : playerList) {
@@ -52,10 +53,10 @@ public class Game {
             player.setName(playerName);
         }
         */
+        
         int sectorNumber = 0;
         int hexNumber = 0;
         Boolean validInput = false;
-
 
         for(Player player : playerList){
             while (!validInput) {
@@ -79,6 +80,11 @@ public class Game {
             System.out.println(playerList[i].toString());
         }
 
+    }
+
+
+    public Carte getCarte() {
+        return carte;
     }
 
     public void playRound(){
@@ -116,15 +122,26 @@ public class Game {
                 int minIndex = cardOrderMinIndex(cardOrder, i); // Find the index of the minimum card
 
                 if(cardOrder[minIndex][i] == 1){
+                    System.out.println(playerList[minIndex].getName() + " : Expand :");
+                    System.out.println(playerList[minIndex].toString());
                     playerList[minIndex].expand(actionCount[0]);
                 }
                 else if(cardOrder[minIndex][i] == 2){
+                    System.out.println(playerList[minIndex].getName() + " : Explore :");
+                    System.out.println(playerList[minIndex].toString());
                     playerList[minIndex].explore(actionCount[1]);
                 }
                 else if(cardOrder[minIndex][i] == 3){
+                    System.out.println(playerList[minIndex].getName() + " : Exterminate :");
+                    System.out.println(playerList[minIndex].toString());
                     playerList[minIndex].exterminate(actionCount[2]);
                 }
                 cardOrder[minIndex][i] = 4; // Set the card to 4 so it won't be played again
+
+                if(playerList[minIndex].getFleets().size() == 0){
+                    end();
+                }
+
             }
 
             actionCount[0] = 0;
@@ -137,11 +154,13 @@ public class Game {
     }
 
     public void rotatePlayers() {
-        Player lastPlayer = playerList[playerList.length - 1];
-        for (int i = playerList.length - 1; i > 0; i--) {
-            playerList[i] = playerList[i - 1];
-        }
-        playerList[0] = lastPlayer;
+        Player[] playerlistTemp = new Player[playerList.length];
+
+        playerlistTemp[0] = playerList[1];
+        playerlistTemp[1] = playerList[2];
+        playerlistTemp[2] = playerList[0];
+
+        playerList = playerlistTemp;
     }
 
     public int cardOrderMinIndex(int[][] cardOrder, int cardTurn) {
@@ -164,23 +183,29 @@ public class Game {
                     sectorIndex = player.chooseSector();
                     player.score(sectorIndex);
                 }
+            }
             sectorIndex = player.chooseSector();
             player.score(sectorIndex);
+            System.out.println(player.getName() + " : Score : " + player.getScore());
             }
         }
-    }
 
 
     public void end(){
         int winnerIndex = 0;
-        System.out.println("End of the game");
+        System.out.println("\n");
+        System.out.println("-------------------");
+        System.out.println("| End of the game |");
+        System.out.println("-------------------");
+        System.out.println("\n");
+
         for (Player player : playerList){
             for (Fleet fleet : player.getFleets()){
                 player.setScore(player.getScore() + fleet.getHex().getSector()*2);
             }
         }
         for (Player player : playerList){
-            System.out.println(player.getName() + " : " + player.getScore());
+            System.out.println(player.getName() + " : Score : " + player.getScore());
             System.out.println(player.toString());
         }
 
@@ -190,5 +215,6 @@ public class Game {
             }
         }
         System.out.println(playerList[winnerIndex].getName() + " wins !");
+        System.exit(0);
     }
 }
