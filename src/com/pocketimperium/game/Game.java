@@ -2,10 +2,20 @@ package com.pocketimperium.game;
 
 import com.pocketimperium.player.Fleet;
 import com.pocketimperium.player.Player;
+import java.util.Scanner;
 
-public class Game {
+import java.io.*;
+
+public class Game implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Player[] playerList = {new Player(this), new Player(this), new Player(this)};
     private Carte carte = new Carte();
+    private int round = 0;
+    private transient Scanner scanner = new Scanner(System.in);
+
+    public int getRound(){
+        return round;
+    }
 
     public void start(){
         System.out.println("\n");
@@ -14,18 +24,8 @@ public class Game {
         System.out.println("-------------------");
         System.out.println("\n");
 
-        carte.afficherCarte();
+        carte.afficherCarte();     
 
-        
-        for (Player player : playerList) {
-            player.setPlayerState(false);
-        }
-        playerList[0].setName("Bot1");
-        playerList[1].setName("Bot2");
-        playerList[2].setName("Bot3");
-        
-
-        /*
         for (Player player : playerList) {
             Boolean validInput = false;
         
@@ -52,7 +52,6 @@ public class Game {
             String playerName = scanner.nextLine();
             player.setName(playerName);
         }
-        */
         
         int sectorNumber = 0;
         int hexNumber = 0;
@@ -87,7 +86,7 @@ public class Game {
         return carte;
     }
 
-    public void playRound(){
+    public void playRound() {
         int cardOrder[][] = new int[3][3];
         int[] actionCount = new int[3];
 
@@ -103,7 +102,7 @@ public class Game {
             System.out.println(playerList[i].getName() + " : " + cardOrder[i][0] + " " + cardOrder[i][1] + " " + cardOrder[i][2]);
         }
                 
-        // I want the minimum card to be the first one
+        // The minimum card is the first one
         for (int i = 0; i < 3; i++) {
 
             for (int j = 0; j < 3; j++) {
@@ -175,7 +174,7 @@ public class Game {
         return minIndex;
     }
 
-    public void score(){
+    public void score(int round){
         int sectorIndex;
         for (Player player : playerList){
             for (Fleet fleet : player.getFleets()){
@@ -188,6 +187,7 @@ public class Game {
             player.score(sectorIndex);
             System.out.println(player.getName() + " : Score : " + player.getScore());
             }
+            round++;
         }
 
 
@@ -215,6 +215,32 @@ public class Game {
             }
         }
         System.out.println(playerList[winnerIndex].getName() + " wins !");
+        File saveFile = new File("save/save.ser");
+        if (saveFile.exists()) {
+            if (saveFile.delete()) {
+                System.out.println("Save file deleted.");
+            } else {
+                System.out.println("Failed to delete save file.");
+            }
+        }
         System.exit(0);
+    }
+
+    public void saveGame(String filePath) throws IOException {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            oos.writeObject(this);
+        } catch (IOException e) {
+            System.out.println("Error saving game: " + e.getMessage());
+            throw e;
+        }
+    }
+
+    public static Game loadGame(String filePath) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath))) {
+            return (Game) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Error loading game: " + e.getMessage());
+            throw e;
+        }
     }
 }

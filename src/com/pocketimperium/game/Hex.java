@@ -1,9 +1,11 @@
 package com.pocketimperium.game;
 
 import com.pocketimperium.player.Fleet;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Hex {
+public class Hex implements Serializable{
     private final int id;
     private final int sector;
     private final int systeme; // "Niveau 1", "Niveau 2", ou null

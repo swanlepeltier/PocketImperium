@@ -1,8 +1,10 @@
 package com.pocketimperium.player;
 
+import java.io.Serializable;
+
 import com.pocketimperium.game.Hex;
 
-public class Fleet {
+public class Fleet implements Serializable{
     private int amount;
     private Hex hex;
     private Player player;

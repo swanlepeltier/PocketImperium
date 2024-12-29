@@ -1,8 +1,9 @@
 package com.pocketimperium.game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Sector {
+public class Sector implements Serializable{
     private final int id;
     protected final ArrayList<Hex> hexagones;
 

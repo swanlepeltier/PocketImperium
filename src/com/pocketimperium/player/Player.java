@@ -4,8 +4,9 @@ import com.pocketimperium.game.Hex;
 import java.util.ArrayList;
 import java.util.Scanner;
 import com.pocketimperium.game.Game;
+import java.io.Serializable;
 
-public class Player {
+public class Player implements Serializable{
     private String color;
     private ArrayList<Fleet> fleetList;
     private Boolean isHuman;
@@ -15,7 +16,7 @@ public class Player {
     private Game game;
     private int score = 0;
 
-    private Scanner scanner = new Scanner(System.in);
+    private transient Scanner scanner = new Scanner(System.in);
 
     public Player(Game game){
         fleetList = new ArrayList<>();
@@ -221,7 +222,7 @@ public class Player {
                     neighbour.getSector() != 6);
         if (!result) {
             if (this.isHuman) {
-                System.out.println("Error:" + this.name + " : " + targetHex.toString() + " : " + fleetList.get(fleetIndex).toString());
+                System.out.println("Error: The selected hex is not a direct neighbour or neighbour of a neighbour of the fleet's current hex.");
             }
         }
         return result;
@@ -339,7 +340,12 @@ public class Player {
             else{
                 game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).getFleet().setAmount(game.getCarte().getSectors().get(sectorIndex).getHexs().get(hexIndex).getFleet().getAmount() + amount);
             }
+
             System.out.println(this.toString());
+
+            if(this.getFleets().size() == 0){
+                game.end();
+            }
         }
     }
 

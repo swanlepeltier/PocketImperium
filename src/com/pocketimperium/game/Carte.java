@@ -1,8 +1,9 @@
 package com.pocketimperium.game;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Carte {
+public class Carte implements Serializable{
 
     private final ArrayList<Sector> sectors = new ArrayList<>();
 
